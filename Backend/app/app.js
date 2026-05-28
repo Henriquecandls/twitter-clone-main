@@ -34,7 +34,10 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 const allowedOrigins = [
   "https://henriquecandls.github.io",
-  "https://henriquecandls.github.io/twitter-clone"
+  "https://henriquecandls.github.io/twitter-clone",
+  "https://henriquecandls.github.io/twitter-clone-main",
+  "http://localhost:5173",
+  "http://localhost:3000"
 ];
 
 app.use(cors({
@@ -44,7 +47,10 @@ app.use(cors({
     } else {
       callback(new Error("Not allowed by CORS"));
     }
-  }
+  },
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
