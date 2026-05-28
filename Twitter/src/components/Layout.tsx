@@ -1,8 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     <div className="app-shell">
@@ -11,9 +17,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <nav>
           <Link to="/">Home</Link>
           {user && <Link to="/feed">Feed</Link>}
-          {isAdmin && <Link to="/backoffice/users">Backoffice</Link>}
+          {isAdmin && (
+            <>
+              <Link to="/backoffice/users">Backoffice Users</Link>
+              <Link to="/backoffice/tweets">Backoffice Tweets</Link>
+            </>
+          )}
           {user ? (
-            <button onClick={logout}>Logout</button>
+            <button type="button" onClick={handleLogout}>Logout</button>
           ) : (
             <>
               <Link to="/login">Login</Link>

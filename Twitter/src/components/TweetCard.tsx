@@ -9,6 +9,8 @@ export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () =>
   const currentUser: User | null = rawUser ? JSON.parse(rawUser) : null;
 
   const likedByMe = !!currentUser && !!tweet.likes?.some((like) => like.utilizador_id === currentUser.id);
+  const isAuthor = !!currentUser && currentUser.id === tweet.autor?.id;
+  const isAdmin = !!currentUser && !!currentUser.is_admin;
 
   const toggleLike = async () => {
     if (likedByMe) {
@@ -17,6 +19,11 @@ export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () =>
       await api.post(`/tweets/${tweet.id}/like`);
     }
 
+    onRefresh();
+  };
+
+  const deleteTweet = async () => {
+    await api.delete(`/tweets/${tweet.id}`);
     onRefresh();
   };
 
@@ -33,9 +40,10 @@ export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () =>
 
   return (
     <article className="tweet-card">
-      <p>
+      <div className="tweet-header">
         <strong>@{tweet.autor?.username ?? "user"}</strong>
-      </p>
+        {tweet.created_at && <small>{new Date(tweet.created_at).toLocaleString()}</small>}
+      </div>
 
       <p>{tweet.conteudo}</p>
 
@@ -51,6 +59,11 @@ export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () =>
           {likedByMe ? "Unlike" : "Like"} ({tweet.likes?.length ?? 0})
         </button>
         <span>Comentários: {tweet.comments?.length ?? 0}</span>
+        {(isAuthor || isAdmin) && (
+          <button type="button" className="danger" onClick={deleteTweet}>
+            Apagar
+          </button>
+        )}
       </div>
 
       <div className="comments">

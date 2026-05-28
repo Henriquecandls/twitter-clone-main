@@ -8,11 +8,17 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await login(username, password);
-    navigate("/feed");
+    try {
+      setError(null);
+      await login(username, password);
+      navigate("/feed");
+    } catch (err) {
+      setError("Login falhou. Verifique as credenciais e tente novamente.");
+    }
   };
 
   return (
@@ -23,6 +29,7 @@ export function LoginPage() {
         <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" required />
         <button type="submit">Entrar</button>
       </form>
+      {error && <p className="error-message">{error}</p>}
     </Layout>
   );
 }
