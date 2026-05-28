@@ -5,6 +5,14 @@
   --blue: #1d9bf0;
 }
 
+/* Dark theme variables (applied when body has .dark) */
+.dark {
+  --bg: #0b1220;
+  --card: #0f1724;
+  --text: #e6eef6;
+  --blue: #3aa0ff;
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;

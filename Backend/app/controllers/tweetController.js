@@ -1,4 +1,5 @@
 const { Tweet, User, Comment, Like } = require("../sequelize");
+const { Op } = require("sequelize");
 
 const tweetIncludes = [
   { model: User, as: "autor", attributes: ["id", "username"] },
@@ -17,7 +18,21 @@ const tweetIncludes = [
 const tweetController = {
   getFeed: async (req, res) => {
     try {
+      // Fetch the list of users that the current user follows
+      const seguidorId = req.user?.id;
+      if (!seguidorId) return res.status(401).json({ message: "Token em falta." });
+
+      const followRows = await require("../sequelize").Follow.findAll({
+        where: { seguidor_id: seguidorId },
+        attributes: ["seguido_id"]
+      });
+
+      const followedIds = followRows.map((r) => r.seguido_id);
+      // include own tweets as well
+      const allowedAuthorIds = Array.from(new Set([...followedIds, seguidorId]));
+
       const tweets = await Tweet.findAll({
+        where: { utilizador_id: { [Op.in]: allowedAuthorIds } },
         order: [["created_at", "DESC"]],
         include: tweetIncludes
       });
