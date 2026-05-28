@@ -1,0 +1,28 @@
+{
+  "tweets": [
+    {
+      "id": 0,
+      "message": "Hello word",
+      "user": "John Doe",
+      "image": "htpps:",
+      "creaAT": "22-11-2024",
+      "LIKES": 0
+    },
+    {
+      "id": 2,
+      "message": "Hello word",
+      "user": "John Doe",
+      "image": "",
+      "creaAT": "22-11-2024",
+      "LIKES": 0
+    },
+    {
+      "id": 3,
+      "message": "Hello word",
+      "user": "John Doe",
+      "image": "",
+      "creaAT": "22-11-2024",
+      "LIKES": 0
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: twitter-clone-api
+    env: node
+    rootDir: Backend/app
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 6h
+      - key: CORS_ORIGIN
+        sync: false
