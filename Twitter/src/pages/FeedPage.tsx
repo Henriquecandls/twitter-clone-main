@@ -40,18 +40,20 @@ export function FeedPage() {
 
   const loadPublicFeed = useCallback(async () => {
     try {
-      const { data } = await api.get("/feed/public");
+      const { data } = await api.get("/tweets/public");
       setPublicTweets(data);
       setPublicFeedError(null);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
       setPublicTweets([]);
       if (status === 404) {
         setPublicFeedError(
           "O feed público ainda não está no servidor. Faz deploy do backend no Render."
         );
       } else {
-        setPublicFeedError("Não foi possível carregar o feed público.");
+        setPublicFeedError(message || "Não foi possível carregar o feed público.");
       }
     }
   }, []);
