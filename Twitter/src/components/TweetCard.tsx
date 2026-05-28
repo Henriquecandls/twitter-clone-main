@@ -1,16 +1,33 @@
-import { useState } from "react";
 import { api } from "../services/api";
-import type { Tweet, User } from "../types";
+import type { DiscoverUser, Tweet, User } from "../types";
+import { Comments } from "./Comments";
 
-export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () => void }) {
-  const [comment, setComment] = useState("");
+const API_ORIGIN =
+  import.meta.env.VITE_API_ORIGIN || "https://twitter-clone-main-ikav.onrender.com";
 
-  const rawUser = localStorage.getItem("user");
-  const currentUser: User | null = rawUser ? JSON.parse(rawUser) : null;
+type Props = {
+  tweet: Tweet;
+  users: DiscoverUser[];
+  currentUser: User | null;
+  onRefresh: () => void;
+  onToggleFollow: (user: DiscoverUser) => void;
+};
 
-  const likedByMe = !!currentUser && !!tweet.likes?.some((like) => like.utilizador_id === currentUser.id);
+export function TweetCard({ tweet, users, currentUser, onRefresh, onToggleFollow }: Props) {
+  const likedByMe =
+    !!currentUser && !!tweet.likes?.some((like) => like.utilizador_id === currentUser.id);
   const isAuthor = !!currentUser && currentUser.id === tweet.autor?.id;
-  const isAdmin = !!currentUser && !!currentUser.is_admin;
+  const isAdmin = !!currentUser?.is_admin;
+
+  const authorUser = users.find((u) => u.id === tweet.autor?.id);
+  const isFollowing = authorUser?.is_following ?? false;
+  const showFollow = authorUser && !isAuthor;
+
+  const imageSrc = tweet.imagem_url
+    ? tweet.imagem_url.startsWith("http")
+      ? tweet.imagem_url
+      : `${API_ORIGIN}${tweet.imagem_url}`
+    : null;
 
   const toggleLike = async () => {
     if (likedByMe) {
@@ -18,71 +35,74 @@ export function TweetCard({ tweet, onRefresh }: { tweet: Tweet; onRefresh: () =>
     } else {
       await api.post(`/tweets/${tweet.id}/like`);
     }
-
     onRefresh();
   };
 
   const deleteTweet = async () => {
+    if (!window.confirm("Apagar tweet?")) return;
     await api.delete(`/tweets/${tweet.id}`);
     onRefresh();
   };
 
-  const submitComment = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const text = comment.trim();
-    if (!text) return;
-
-    await api.post(`/tweets/${tweet.id}/comments`, { conteudo: text });
-    setComment("");
-    onRefresh();
-  };
-
   return (
-    <article className="tweet-card">
-      <div className="tweet-header">
-        <strong>@{tweet.autor?.username ?? "user"}</strong>
-        {tweet.created_at && <small>{new Date(tweet.created_at).toLocaleString()}</small>}
-      </div>
+    <div className="card mb-3 shadow-sm">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <div className="fw-bold">@{tweet.autor?.username ?? "user"}</div>
+            {tweet.created_at && (
+              <div className="text-muted small">
+                {new Date(tweet.created_at).toLocaleString("pt-PT")}
+              </div>
+            )}
+          </div>
 
-      <p>{tweet.conteudo}</p>
+          <div className="d-flex gap-2 flex-wrap">
+            <button
+              type="button"
+              className={`btn btn-sm ${likedByMe ? "btn-primary" : "btn-outline-primary"}`}
+              onClick={toggleLike}
+            >
+              {likedByMe ? "Unlike" : "Like"}
+            </button>
 
-      {tweet.imagem_url && (
-        <img
-          src={`${import.meta.env.VITE_API_ORIGIN || "http://localhost:3000"}${tweet.imagem_url}`}
-          alt="tweet"
-        />
-      )}
+            {showFollow && authorUser && (
+              <button
+                type="button"
+                className={`btn btn-sm ${isFollowing ? "btn-danger" : "btn-outline-danger"}`}
+                onClick={() => onToggleFollow(authorUser)}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            )}
 
-      <div className="tweet-actions">
-        <button type="button" onClick={toggleLike}>
-          {likedByMe ? "Unlike" : "Like"} ({tweet.likes?.length ?? 0})
-        </button>
-        <span>Comentários: {tweet.comments?.length ?? 0}</span>
-        {(isAuthor || isAdmin) && (
-          <button type="button" className="danger" onClick={deleteTweet}>
-            Apagar
-          </button>
+            {(isAuthor || isAdmin) && (
+              <button type="button" className="btn btn-sm btn-outline-danger" onClick={deleteTweet}>
+                Apagar
+              </button>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-3 mb-3">{tweet.conteudo}</p>
+
+        {imageSrc && (
+          <img
+            src={imageSrc}
+            alt={`Imagem do tweet de ${tweet.autor?.username}`}
+            className="img-fluid rounded mb-3"
+            style={{ maxHeight: 240, objectFit: "cover" }}
+          />
         )}
-      </div>
 
-      <div className="comments">
-        {tweet.comments?.map((comment) => (
-          <p key={comment.id} className="comment">
-            <strong>@{comment.autor?.username ?? "user"}:</strong> {comment.conteudo}
-          </p>
-        ))}
-      </div>
+        <div className="text-muted small">Likes: {tweet.likes?.length ?? 0}</div>
 
-      <form onSubmit={submitComment} className="comment-form">
-        <input
-          value={comment}
-          maxLength={280}
-          placeholder="Escreve um comentário..."
-          onChange={(event) => setComment(event.target.value)}
+        <Comments
+          tweetId={tweet.id}
+          comments={tweet.comments ?? []}
+          onCommentAdded={onRefresh}
         />
-        <button type="submit">Comentar</button>
-      </form>
-    </article>
+      </div>
+    </div>
   );
 }

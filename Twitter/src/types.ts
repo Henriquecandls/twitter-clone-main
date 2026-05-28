@@ -31,10 +31,3 @@ export interface Tweet {
   comments?: Comment[];
   created_at?: string;
 }
-
-export interface DiscoverUser {
-  id: number;
-  username: string;
-  email?: string;
-  is_following: boolean;
-}

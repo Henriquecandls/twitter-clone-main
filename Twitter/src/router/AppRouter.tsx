@@ -1,8 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import type { ReactElement } from "react";
 import { useAuth } from "../context/AuthContext";
-import { BackofficeTweetsPage } from "../pages/BackofficeTweetsPage";
-import { BackofficeUsersPage } from "../pages/BackofficeUsersPage";
+import { AdminPage } from "../pages/AdminPage";
 import { FeedPage } from "../pages/FeedPage";
 import { LandingPage } from "../pages/LandingPage";
 import { LoginPage } from "../pages/LoginPage";
@@ -34,21 +33,15 @@ export function AppRouter() {
         }
       />
       <Route
-        path="/backoffice/users"
+        path="/admin"
         element={
           <AdminRoute>
-            <BackofficeUsersPage />
+            <AdminPage />
           </AdminRoute>
         }
       />
-      <Route
-        path="/backoffice/tweets"
-        element={
-          <AdminRoute>
-            <BackofficeTweetsPage />
-          </AdminRoute>
-        }
-      />
+      <Route path="/backoffice/users" element={<Navigate to="/admin" replace />} />
+      <Route path="/backoffice/tweets" element={<Navigate to="/admin" replace />} />
     </Routes>
   );
 }
