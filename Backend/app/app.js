@@ -65,6 +65,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/tweets', tweetsRouter);
 app.get('/api/feed', authenticateTokenFromHeaders, tweetController.getFeed);
+app.get('/api/feed/public', authenticateTokenFromHeaders, tweetController.getPublicFeed);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // catch 404 and forward to error handler

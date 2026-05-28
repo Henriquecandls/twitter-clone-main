@@ -15,10 +15,17 @@ const tweetIncludes = [
   }
 ];
 
+async function listTweets(where = {}) {
+  return Tweet.findAll({
+    where,
+    order: [["created_at", "DESC"]],
+    include: tweetIncludes
+  });
+}
+
 const tweetController = {
   getFeed: async (req, res) => {
     try {
-      // Fetch the list of users that the current user follows
       const seguidorId = req.user?.id;
       if (!seguidorId) return res.status(401).json({ message: "Token em falta." });
 
@@ -28,18 +35,24 @@ const tweetController = {
       });
 
       const followedIds = followRows.map((r) => r.seguido_id);
-      // include own tweets as well
       const allowedAuthorIds = Array.from(new Set([...followedIds, seguidorId]));
 
-      const tweets = await Tweet.findAll({
-        where: { utilizador_id: { [Op.in]: allowedAuthorIds } },
-        order: [["created_at", "DESC"]],
-        include: tweetIncludes
-      });
-
+      const tweets = await listTweets({ utilizador_id: { [Op.in]: allowedAuthorIds } });
       res.json(tweets);
     } catch (error) {
       console.error("Feed error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  getPublicFeed: async (req, res) => {
+    try {
+      if (!req.user?.id) return res.status(401).json({ message: "Token em falta." });
+
+      const tweets = await listTweets();
+      res.json(tweets);
+    } catch (error) {
+      console.error("Public feed error:", error);
       res.status(500).json({ message: error.message });
     }
   },
