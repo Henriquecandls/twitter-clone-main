@@ -5,17 +5,55 @@ import { TweetForm } from "../components/TweetForm";
 import { api } from "../services/api";
 import type { DiscoverUser, Tweet } from "../types";
 
-type FeedMode = "following" | "public";
+function TweetList({
+  tweets,
+  emptyMessage,
+  onRefresh,
+}: {
+  tweets: Tweet[];
+  emptyMessage: string;
+  onRefresh: () => void;
+}) {
+  if (tweets.length === 0) {
+    return <p className="empty-feed">{emptyMessage}</p>;
+  }
+
+  return (
+    <>
+      {tweets.map((tweet) => (
+        <TweetCard key={tweet.id} tweet={tweet} onRefresh={onRefresh} />
+      ))}
+    </>
+  );
+}
 
 export function FeedPage() {
-  const [feedMode, setFeedMode] = useState<FeedMode>("following");
-  const [tweets, setTweets] = useState<Tweet[]>([]);
+  const [followingTweets, setFollowingTweets] = useState<Tweet[]>([]);
+  const [publicTweets, setPublicTweets] = useState<Tweet[]>([]);
   const [users, setUsers] = useState<DiscoverUser[]>([]);
+  const [publicFeedError, setPublicFeedError] = useState<string | null>(null);
 
-  const loadFeed = useCallback(async (mode: FeedMode) => {
-    const endpoint = mode === "public" ? "/feed/public" : "/feed";
-    const { data } = await api.get(endpoint);
-    setTweets(data);
+  const loadFollowingFeed = useCallback(async () => {
+    const { data } = await api.get("/feed");
+    setFollowingTweets(data);
+  }, []);
+
+  const loadPublicFeed = useCallback(async () => {
+    try {
+      const { data } = await api.get("/feed/public");
+      setPublicTweets(data);
+      setPublicFeedError(null);
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      setPublicTweets([]);
+      if (status === 404) {
+        setPublicFeedError(
+          "O feed público ainda não está no servidor. Faz deploy do backend no Render."
+        );
+      } else {
+        setPublicFeedError("Não foi possível carregar o feed público.");
+      }
+    }
   }, []);
 
   const loadUsers = useCallback(async () => {
@@ -24,8 +62,8 @@ export function FeedPage() {
   }, []);
 
   const refreshAll = useCallback(async () => {
-    await Promise.all([loadFeed(feedMode), loadUsers()]);
-  }, [loadFeed, loadUsers, feedMode]);
+    await Promise.all([loadFollowingFeed(), loadPublicFeed(), loadUsers()]);
+  }, [loadFollowingFeed, loadPublicFeed, loadUsers]);
 
   useEffect(() => {
     refreshAll();
@@ -45,71 +83,46 @@ export function FeedPage() {
     <Layout>
       <h2>Feed</h2>
 
-      <div className="feed-tabs" role="tablist" aria-label="Tipo de feed">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={feedMode === "following"}
-          className={feedMode === "following" ? "active" : ""}
-          onClick={() => setFeedMode("following")}
-        >
-          A seguir
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={feedMode === "public"}
-          className={feedMode === "public" ? "active" : ""}
-          onClick={() => setFeedMode("public")}
-        >
-          Público
-        </button>
-      </div>
-
-      <p className="feed-hint">
-        {feedMode === "following"
-          ? "Tweets de quem segues e os teus."
-          : "Todos os tweets de todos os utilizadores."}
-      </p>
-
       <section className="feed-grid">
         <div>
           <TweetForm onCreated={refreshAll} />
 
-          <div className="tweet-list">
-            {tweets.length === 0 && (
-              <p className="empty-feed">
-                {feedMode === "following"
-                  ? "Segue utilizadores para ver tweets aqui."
-                  : "Ainda não há tweets."}
-              </p>
-            )}
-
-            {tweets.map((tweet) => (
-              <TweetCard
-                key={tweet.id}
-                tweet={tweet}
+          <section className="feed-section">
+            <h3>Pessoas que segues</h3>
+            <p className="feed-hint">Tweets de quem segues e os teus.</p>
+            <div className="tweet-list">
+              <TweetList
+                tweets={followingTweets}
+                emptyMessage="Segue utilizadores para ver tweets aqui."
                 onRefresh={refreshAll}
               />
-            ))}
-          </div>
+            </div>
+          </section>
+
+          <section className="feed-section">
+            <h3>Feed público</h3>
+            <p className="feed-hint">Todos os tweets de todos os utilizadores.</p>
+            {publicFeedError && <p className="feed-error">{publicFeedError}</p>}
+            <div className="tweet-list">
+              <TweetList
+                tweets={publicTweets}
+                emptyMessage="Ainda não há tweets."
+                onRefresh={refreshAll}
+              />
+            </div>
+          </section>
         </div>
 
         <aside className="users-box">
           <h3>Utilizadores</h3>
 
-          {users.length === 0 && (
-            <p>Não há outros utilizadores.</p>
-          )}
+          {users.length === 0 && <p>Não há outros utilizadores.</p>}
 
           {users.map((user) => (
             <div key={user.id} className="user-row">
               <span>@{user.username}</span>
 
-              <button
-                type="button"
-                onClick={() => toggleFollow(user)}
-              >
+              <button type="button" onClick={() => toggleFollow(user)}>
                 {user.is_following ? "Unfollow" : "Follow"}
               </button>
             </div>

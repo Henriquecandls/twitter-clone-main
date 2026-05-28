@@ -61,28 +61,27 @@ body {
   flex: 1;
 }
 
-.feed-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+.feed-section {
+  margin-bottom: 32px;
 }
 
-.feed-tabs button {
-  margin-bottom: 0;
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid #d1d5db;
-}
-
-.feed-tabs button.active {
-  background: #1d9bf0;
-  color: #fff;
-  border-color: #1d9bf0;
+.feed-section h3 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
 }
 
 .feed-hint {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.feed-error {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
   font-size: 0.95rem;
 }
 
