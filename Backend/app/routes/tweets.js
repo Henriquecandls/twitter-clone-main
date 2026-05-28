@@ -9,6 +9,7 @@ const upload = multer({ dest: 'uploads/' });
 router.use(authenticateTokenFromHeaders);
 
 router.get('/feed', tweetController.getFeed);
+router.get('/public', tweetController.getPublicFeed);
 router.get('/', tweetController.listAllTweets);
 router.get('/:id', tweetController.getTweetById);
 router.post('/', upload.single('image'), tweetController.createTweet);
