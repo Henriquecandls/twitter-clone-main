@@ -58,7 +58,6 @@ export function FeedPage() {
       }
     }
 
-    const status = (lastError as { response?: { status?: number } })?.response?.status;
     const message = (lastError as { response?: { data?: { message?: string } } })?.response
       ?.data?.message;
 
