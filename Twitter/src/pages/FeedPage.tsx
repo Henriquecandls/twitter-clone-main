@@ -10,26 +10,12 @@ export function FeedPage() {
   const [users, setUsers] = useState<DiscoverUser[]>([]);
 
   const loadFeed = useCallback(async () => {
-    const token = localStorage.getItem("token");
-
-    const { data } = await api.get("/feed", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const { data } = await api.get("/feed");
     setTweets(data);
   }, []);
 
   const loadUsers = useCallback(async () => {
-    const token = localStorage.getItem("token");
-
-    const { data } = await api.get("/users/discover", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const { data } = await api.get("/users/discover");
     setUsers(data);
   }, []);
 
@@ -42,24 +28,10 @@ export function FeedPage() {
   }, [refreshAll]);
 
   const toggleFollow = async (user: DiscoverUser) => {
-    const token = localStorage.getItem("token");
-
     if (user.is_following) {
-      await api.delete(`/users/${user.id}/follow`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/users/${user.id}/follow`);
     } else {
-      await api.post(
-        `/users/${user.id}/follow`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.post(`/users/${user.id}/follow`, {});
     }
 
     await refreshAll();

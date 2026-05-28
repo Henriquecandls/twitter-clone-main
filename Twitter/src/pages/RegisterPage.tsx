@@ -19,6 +19,8 @@ export function RegisterPage() {
       navigate("/feed");
     } catch (err) {
       setError("Registo falhou. Verifique os dados e tente novamente.");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
   };
 

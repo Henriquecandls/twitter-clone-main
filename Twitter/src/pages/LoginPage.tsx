@@ -18,6 +18,8 @@ export function LoginPage() {
       navigate("/feed");
     } catch (err) {
       setError("Login falhou. Verifique as credenciais e tente novamente.");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
   };
 
