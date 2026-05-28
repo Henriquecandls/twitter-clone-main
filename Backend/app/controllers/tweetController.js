@@ -29,6 +29,11 @@ const tweetController = {
       const seguidorId = req.user?.id;
       if (!seguidorId) return res.status(401).json({ message: "Token em falta." });
 
+      if (req.query.scope === "public") {
+        const tweets = await listTweets();
+        return res.json(tweets);
+      }
+
       const followRows = await require("../sequelize").Follow.findAll({
         where: { seguidor_id: seguidorId },
         attributes: ["seguido_id"]

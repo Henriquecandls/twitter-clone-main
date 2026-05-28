@@ -39,23 +39,34 @@ export function FeedPage() {
   }, []);
 
   const loadPublicFeed = useCallback(async () => {
-    try {
-      const { data } = await api.get("/tweets/public");
-      setPublicTweets(data);
-      setPublicFeedError(null);
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
-        ?.message;
-      setPublicTweets([]);
-      if (status === 404) {
-        setPublicFeedError(
-          "O feed público ainda não está no servidor. Faz deploy do backend no Render."
-        );
-      } else {
-        setPublicFeedError(message || "Não foi possível carregar o feed público.");
+    const endpoints = [
+      { url: "/feed", params: { scope: "public" } },
+      { url: "/tweets/public" },
+      { url: "/feed/public" },
+    ];
+
+    let lastError: unknown = null;
+
+    for (const endpoint of endpoints) {
+      try {
+        const { data } = await api.get(endpoint.url, { params: endpoint.params });
+        setPublicTweets(data);
+        setPublicFeedError(null);
+        return;
+      } catch (err) {
+        lastError = err;
       }
     }
+
+    const status = (lastError as { response?: { status?: number } })?.response?.status;
+    const message = (lastError as { response?: { data?: { message?: string } } })?.response
+      ?.data?.message;
+
+    setPublicTweets([]);
+    setPublicFeedError(
+      message ||
+        "Atualiza o backend no Render: Manual Deploy → Deploy latest commit."
+    );
   }, []);
 
   const loadUsers = useCallback(async () => {
