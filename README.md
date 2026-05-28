@@ -30,10 +30,10 @@ npm start
 Swagger: `GET /api-docs`
 
 ## Frontend
-Local: `Frontend/Twitter`
+Local: `Twitter`
 
 ```bash
-cd Frontend/Twitter
+cd Twitter
 npm install
 npm run dev
 ```
