@@ -22,3 +22,5 @@ services:
         value: 6h
       - key: CORS_ORIGIN
         sync: false
+      - key: FRONTEND_URL
+        value: https://henriquecandls.github.io/twitter-clone-main/
